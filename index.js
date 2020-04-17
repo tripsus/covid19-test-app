@@ -16,8 +16,12 @@ const { Client, Connection } = require('pg');
  * App Variables
  */
 const app = express();
+dotenv.config();
 const port = process.env.PORT || "8000";
 const client = new Client(process.env.DATABASE_URL);
+
+console.log(process.env.SENDGRID_API_KEY);
+
 /**
  *  App Configuration
  */
@@ -56,11 +60,20 @@ app.get("/mail", (req, res) => {
   });
 
 app.get("/db", (req, res) => {
-  console.log("Connecting to database")
+  console.log("Connecting to database" + process.env.DATABASE_URL);
   client.connect();
-  client.query('SELECT version()', ['Hello world!'], (err, res) => {
-    console.log(err ? err.stack : res.rows[0].message) // Hello World!
+  client.query('SELECT version()', (err, results) => {
+    console.log(err ? err.stack : results.rows[0].message) // Hello World!
     client.end()
+    if(err)
+    {
+      console.log(err.stack);
+      res.status(500).send("Couldn't connect to database.")
+    }
+    else
+    {
+      res.status(200).json(results.rows);
+    }
   })
 })
 /**
