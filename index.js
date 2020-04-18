@@ -7,7 +7,7 @@ const express = require("express");
 const path = require("path");
 const dotenv = require('dotenv');
 const sgMail = require('@sendgrid/mail');
-const { Client, Connection } = require('pg');
+const { Client } = require('pg');
 
 
 
@@ -60,6 +60,23 @@ app.get("/mail", (req, res) => {
   });
 
 app.get("/db", (req, res) => {
+  console.log("Connecting to database" + process.env.DATABASE_URL);
+  client.connect();
+  client.query('SELECT version()', (err, results) => {
+    console.log(err ? err.stack : results.rows[0].message) // Hello World!
+    client.end()
+    if(err)
+    {
+      console.log(err.stack);
+      res.status(500).send("Couldn't connect to database.")
+    }
+    else
+    {
+      res.status(200).json(results.rows);
+    }
+  })
+})
+app.post("/db", (req, res) => {
   console.log("Connecting to database" + process.env.DATABASE_URL);
   client.connect();
   client.query('SELECT version()', (err, results) => {
